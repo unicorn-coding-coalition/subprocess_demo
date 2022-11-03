@@ -1,0 +1,5 @@
+automation
+backup
+development
+production
+testing
