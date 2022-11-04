@@ -1,6 +1,8 @@
 import subprocess
 import argparse
 import re
+from os.path import exists
+
 
 # If your shell script has shebang,
 # you can omit shell=True argument.
@@ -9,8 +11,8 @@ import re
 
 class health_check():
 
-    def __init__(self,output_file,i,o,u):
-        self.outputf = output_file
+    def __init__(self,i,o,u):
+        #self.outputf = output_file
         self.o = o
         self.u = u
         if i is not None:
@@ -22,12 +24,14 @@ class health_check():
         self.capacity = None
         self.num_pgs = None
 
-        if self.input_file != None:
+        if self.input_file != None and exists(self.input_file):
             with open(self.input_file) as output:
                 self.parse_output(output)
         else:
+            print("running check_ceph.sh...")
             proc = subprocess.run(["../bash/check_ceph.sh"], shell=True,capture_output=True)
             output = proc.stdout.decode()
+            print(output)
             self.parse_output(output)
 
         if all(var is not None for var in [self.health_status,self.num_osds,self.capacity,self.num_pgs, self.o, self.u]):
@@ -98,7 +102,7 @@ class health_check():
 parser = argparse.ArgumentParser(description="Verify health status of Ceph cluster. You can use an input file from running ceph status, ceph osd tree, and ceph df - if you don't specify input file, this script will run a bash script that will obtain the output from the ceph commands.")
 
 #required argument
-parser.add_argument('output_file', metavar='output_file', type=str, nargs=1, help='path and file name for output')
+#parser.add_argument('output_file', metavar='output_file', type=str, nargs=1, help='path and file name for output')
 
 #optional arguments
 parser.add_argument('-i', metavar='input_file', type=str, nargs=1, help='path to output.txt from ceph health check bash',default=None)
